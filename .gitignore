@@ -1,0 +1,16 @@
+﻿*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.pdf
+*.info
+
+*.test
+
+*.out
+
+.vscode/launch.json
+
+tmproxy
+repo.bundle
