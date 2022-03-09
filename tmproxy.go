@@ -8,12 +8,14 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"flag"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
-
 	"strings"
 	"syscall"
 	"time"
@@ -136,16 +138,26 @@ func PRHandler(w http.ResponseWriter, r *http.Request) {
 	var Body []byte
 	// если в ответе HTML, то его надо обработать
 	if strings.Contains(w.Header().Get("Content-Type"), "text/html") {
-		if w.Header().Get("Content-Encoding") == "gzip" {
-			// предварительно распаковываем, если запакован
+		if w.Header().Get("Content-Encoding") == "gzip" { // содержимое запаковано
+			// предварительно распаковываем
 			Body, _ = io.ReadAll(result.Body)
-			log.Error("err:   без распаковщика пока в разборе типа ответа ошибка")
-			// и запаковываем обратно.
-			ResParse, _ := ParseRespBody(Body)
-			// тут пакуем
-			w.Write(ResParse)
-		} else {
-			// иначе читаем сразу.
+			gr, err := gzip.NewReader(bytes.NewBuffer(Body))
+			if err != nil {
+				log.Error("err: Error with gunzip create new reader: " + err.Error())
+			}
+			defer gr.Close()
+			dataUnZip, err := ioutil.ReadAll(gr)
+			if err != nil {
+				log.Error("err: Error with read UnZIP: " + err.Error())
+			}
+			log.Debugf("ok: Unzippped: \n %s \n", string(dataUnZip))
+			// Обрабатываем .
+			ResParse, _ := ParseRespBody(dataUnZip)
+			// тут пакуем обратно и пишем в ответ браузеру
+			gw, _ := gzip.NewWriterLevel(w, gzip.BestSpeed)
+			defer gw.Close()
+			gw.Write(ResParse)
+		} else { // содержимое не запаковано, обрабатываем сразу.
 			Body, _ = io.ReadAll(result.Body)
 			log.Debug("ok: Контент не упакован, сразу его полностью читаем.")
 			ResParse, _ := ParseRespBody(Body)
