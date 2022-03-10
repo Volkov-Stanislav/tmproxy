@@ -1,9 +1,8 @@
-// Test package
+// Test Proxy package
 
 // Tmproxy реализует прокси для вставки в тест сайта знака ТМ для слов длинной 6 символов.
 // при запуске принимает следующие переменные командной строки:
-// BaseURL string - если переданный в запросе URL начинается с 'localhost' '127.0.0.1' то значение параметра будет подставляться вместо него.
-// Timeout Int - значение максимального ожидания ответа сервера.
+// BaseURL string - если если переданное значение параметра не "" то оно дуте заменять HOST:PORT в запросе к серверу.
 // LogLevel - уровень логирования, принимаются значения panic, error, warning, info, debug.
 package main
 
@@ -25,7 +24,6 @@ import (
 
 var (
 	baseURL  string
-	timeout  int
 	logLevel string
 	Cl       http.Client
 )
@@ -42,7 +40,7 @@ func main() {
 	log.Debug("begin: main()")
 	// разбираем параметры командной строки
 	flag.StringVar(&baseURL, "BaseURL", "habr.com", "Base URL for replace, if \"\" no replace performed")
-	flag.IntVar(&timeout, "Timeout", 10, "Timeout for get request")
+
 	flag.StringVar(&logLevel, "log_level", "error", "logging level, can be set to: panic, error, warning, info, debug.")
 	flag.Parse()
 	log.Debug("ok: flag.Parse()")
