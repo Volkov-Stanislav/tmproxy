@@ -4,7 +4,7 @@
 // при запуске принимает следующие переменные командной строки:
 // BaseURL string - если если переданное значение параметра не "" то оно дуте заменять HOST:PORT в запросе к серверу. По умолчанию habr.com.
 // LogLevel - уровень логирования, принимаются значения panic, error, warning, info, debug.
-// После запуска биндится на 127.0.0.1:8080, перенаправляет запросы на этот адрес на внешний сервер.
+// После запуска биндится на 0.0.0.0:8080, перенаправляет запросы на этот адрес на внешний сервер.
 package main
 
 import (
@@ -73,8 +73,8 @@ func main() {
 	// Запускаем основной обработчик в отдельной горутине, что бы продолжить и отлавливать SIGTERM
 	go func() {
 		log.Debug("ok: http.Handle(/, PRHandler)")
-		if errQr := http.ListenAndServe("127.0.0.1:8080", nil); errQr != nil {
-			log.Error("Err: http.ListenAndServe(\"127.0.0.1:8080\") error: %s" + errQr.Error())
+		if errQr := http.ListenAndServe("0.0.0.0:8080", nil); errQr != nil {
+			log.Error("Err: http.ListenAndServe(\"0.0.0.0:8080\") error: %s" + errQr.Error())
 		}
 	}()
 
