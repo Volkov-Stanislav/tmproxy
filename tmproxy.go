@@ -112,7 +112,7 @@ func PRHandler(w http.ResponseWriter, r *http.Request) {
 	// выполняем запрос.
 	result, err := Cl.Do(CallReq)
 	if err != nil {
-		log.Error("err: Call to %s Failed with error: %s", CallURL, err.Error())
+		log.Errorf("err: Call to %s Failed with error: %s", CallURL, err.Error())
 	}
 	defer result.Body.Close()
 	log.Debugf("ok: Call To Server Success, Duration = %s, CallUrl: | %s | \n", time.Since(startTime).String(), CallURL)
@@ -162,14 +162,13 @@ func PRHandler(w http.ResponseWriter, r *http.Request) {
 				log.Error("err: Error Init new Gzip Writer: " + err.Error())
 			}
 			defer gw.Close()
-			//log.Debugf("ok: Received  Replay: \n %s\n ", string(ResZParse))
+			log.Debugf("ok: Received  Replay: \n %s\n ", string(ResZParse))
 			gw.Write(ResZParse)
 
 		} else { // содержимое не запаковано, обрабатываем сразу.
 			Body, _ = io.ReadAll(result.Body)
 			log.Debug("ok: Контент не упакован, сразу его полностью читаем.")
 			ResParse, _ := ParseRespBody(Body)
-			//	log.Debugf("ok: Received  Replay: \n %s\n ", string(ResParse))
 			w.Write(ResParse)
 		}
 	} else {
@@ -184,7 +183,7 @@ func PRHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ParseRespBody - обработчик ответа сервера, сканирует HTML, ищет выводимый текст и слова в нем длинна которых = 6 символам,
-// и вставляет после найденных слов символ "\u2122
+// и вставляет после найденных слов символ "\u2122"
 func ParseRespBody(InText []byte) ([]byte, error) {
 	var (
 		Result      []byte
@@ -193,7 +192,7 @@ func ParseRespBody(InText []byte) ([]byte, error) {
 		ResErr      error = nil
 	)
 	ReadBuffer = bytes.NewBuffer(InText)
-	WriteBuffer = bytes.NewBuffer(make([]byte, len(InText)+40))
+	WriteBuffer = bytes.NewBuffer(nil)
 
 	// внутренние функции обработки потока.
 	ReadTag := func() string {
@@ -232,7 +231,6 @@ func ParseRespBody(InText []byte) ([]byte, error) {
 			}
 		}
 		WriteBuffer.WriteRune(rr)
-		//log.Debugf("ReadScript '%s'", rr)
 		ss := ReadTag()
 		if !strings.Contains(ss, "script") && !strings.Contains(ss, "style") {
 			log.Warning("err: <stcript> or <style> not ended with </stcript> or </style>")
@@ -252,7 +250,6 @@ func ParseRespBody(InText []byte) ([]byte, error) {
 			// читаем дальше тег
 			CountSymb = 0
 			WriteBuffer.WriteRune(r)
-			//		log.Debugf("нашли < %s\n", r)
 			Tag := ReadTag()
 			if strings.Contains(Tag, "script") || strings.Contains(Tag, "style") {
 				ReadScript()
