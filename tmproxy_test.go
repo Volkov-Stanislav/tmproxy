@@ -25,7 +25,6 @@ func TestParseRespBody(t *testing.T) {
 		want    []byte
 		wantErr bool
 	}{
-		// TODO: Add test cases.
 		{
 			name:    "OK Test",
 			args:    args{InText: []byte("<HEAD></HEAD><BODY><H1>Пример разбора ТеКсТа.<H1></BODY>")},
